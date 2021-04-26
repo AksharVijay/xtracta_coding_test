@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Xtracta Coding Test</title>
+  </head>
+
+  <body>
+    <div style="text-align: center; top: 50%; bottom: 50%; margin-top: 50px">
+      Hi Please open the console to see the suppliers name for the given
+      Inovice.pdf and please run the relative path of the file.
+    </div>
+
+    <script type="text/javascript">
+      supplier_name = suppliers = [];
+      /* function call to read suppliernames.txt file*/
+      suppliernames_content = readTextFile(function (result) {
+        process_content(result);
+      }, "./suppliernames.txt");
+
+      /* function call to read invoice.txt file*/
+      readTextFile(function (result) {
+        process_content(result, "word");
+      }, "invoice.txt");
+
+      /* user defined function */
+      function readTextFile(callback, file) {
+        let client = new XMLHttpRequest();
+        client.open("GET", file, true);
+        client.onreadystatechange = function () {
+          if (client.readyState === 4) {
+            if (client.status === 200 || client.status == 0) {
+              callback(client.responseText);
+            }
+          }
+        };
+        client.send(null);
+      }
+
+      function process_content(result, param = "") {
+        // By lines
+        let supplier = (temp = []);
+        result = result.replaceAll("'", '"');
+        let lines = result.split("\n");
+        // console.log(lines[0]);
+        data = isJSON(lines[0]) ? JSON.parse(lines[0]) : lines[0];
+
+        if (data.constructor === Object) {
+          /* processing of content for invoice.txt file */
+          for (let i = 0; i < lines.length; i++) {
+            let line = lines[i].replaceAll("'", '"');
+            line = JSON.parse(line);
+
+            if (param != "" && line.line_id == 4) {
+              temp[line.pos_id] = line[param];
+            }
+          }
+          supplier = temp.slice(0, temp.length - 3);
+          supplier_name = supplier.join(" ");
+          console.log(supplier_name);
+          return supplier_name;
+        } else {
+          /* processing of content for suppliernames.txt file */
+          let suppliers = (temp = []);
+          for (let i = 0; i < lines.length; i++) {
+            if (i > 0) {
+              temp = lines[i].split(",");
+              suppliers.push({ id: temp[0], name: temp[1] });
+            }
+          }
+          console.log(suppliers);
+          return;
+        }
+      }
+
+      /* user defined function to check if the string is valid JSON or not */
+      function isJSON(str) {
+        try {
+          return JSON.parse(str) && !!str; /* true */
+        } catch (e) {
+          return false;
+        }
+      }
+    </script>
+  </body>
+</html>
